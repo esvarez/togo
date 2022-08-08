@@ -1,16 +1,25 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
+	"context"
+	"github.com/esvarez/togo/pkg/google"
 	"os"
+
+	"github.com/esvarez/togo/internal/entity"
+	"github.com/esvarez/togo/internal/usecase"
+	"github.com/esvarez/togo/internal/usecase/repo"
 
 	"github.com/spf13/cobra"
 )
 
+type taskUseCase interface {
+	Create(context.Context, *entity.Task) (string, error)
+	List(context.Context, int) ([]*entity.Task, error)
+}
 
+type listUseCase interface {
+	List(context.Context) ([]*entity.TaskList, error)
+}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -30,6 +39,28 @@ to quickly create a Cobra application.`,
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	ctx := context.Background()
+
+	srv := google.NewService()
+	//taskRepo := repo.NewTaskRepo()
+	listRepo := repo.NewListRepo(srv)
+
+	//taskUC := usecase.NewTask(taskRepo)
+	listUC := usecase.NewList(listRepo)
+
+	collectionList := newCollectionListCmd(ctx, listUC)
+
+	loginCmd := newLoginCmd()
+	listCmd := newListCmd()
+	newCmd := createNewCmd()
+
+	addNewCmdFlags(newCmd)
+	addListCmdFlags(listCmd, collectionList)
+
+	rootCmd.AddCommand(loginCmd)
+	rootCmd.AddCommand(newCmd)
+	rootCmd.AddCommand(listCmd)
+
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
@@ -45,7 +76,6 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
+
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
-
-
