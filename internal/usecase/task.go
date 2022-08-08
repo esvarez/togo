@@ -2,12 +2,13 @@ package usecase
 
 import (
 	"context"
+	"github.com/esvarez/togo/config"
 	"github.com/esvarez/togo/internal/entity"
 )
 
 type taskRepo interface {
 	NewTask(context.Context, *entity.Task) (string, error)
-	GetTasks(context.Context, int) ([]*entity.Task, error)
+	GetTasks(context.Context, string, int) ([]*entity.Task, error)
 	GetTask(context.Context, string, string) (*entity.Task, error)
 	EditTask(context.Context, *entity.Task) error
 	CompleteTask(context.Context, string) error
@@ -15,6 +16,7 @@ type taskRepo interface {
 }
 
 type Task struct {
+	app  *config.App
 	repo taskRepo
 }
 
@@ -38,6 +40,6 @@ func (t *Task) Delete(ctx context.Context, id string) error {
 	return t.repo.DeleteTask(ctx, id)
 }
 
-func (t *Task) List(ctx context.Context, limit int) ([]*entity.Task, error) {
-	return t.repo.GetTasks(ctx, limit)
+func (t *Task) List(ctx context.Context, listID string, limit int) ([]*entity.Task, error) {
+	return t.repo.GetTasks(ctx, listID, limit)
 }

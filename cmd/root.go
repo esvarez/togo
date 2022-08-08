@@ -2,19 +2,21 @@ package cmd
 
 import (
 	"context"
-	"github.com/esvarez/togo/pkg/google"
+	"fmt"
 	"os"
 
+	"github.com/esvarez/togo/config"
 	"github.com/esvarez/togo/internal/entity"
 	"github.com/esvarez/togo/internal/usecase"
 	"github.com/esvarez/togo/internal/usecase/repo"
+	"github.com/esvarez/togo/pkg/google"
 
 	"github.com/spf13/cobra"
 )
 
 type taskUseCase interface {
 	Create(context.Context, *entity.Task) (string, error)
-	List(context.Context, int) ([]*entity.Task, error)
+	List(context.Context, string, int) ([]*entity.Task, error)
 }
 
 type listUseCase interface {
@@ -40,28 +42,40 @@ to quickly create a Cobra application.`,
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	ctx := context.Background()
+	cfg, err := config.NewConfig()
+	if err != nil {
+		fmt.Printf("Error: %s\n", err)
+		os.Exit(1)
+	}
 
 	srv := google.NewService()
-	//taskRepo := repo.NewTaskRepo()
+
+	taskRepo := repo.NewTaskRepo(srv)
 	listRepo := repo.NewListRepo(srv)
 
-	//taskUC := usecase.NewTask(taskRepo)
+	taskUC := usecase.NewTask(taskRepo)
 	listUC := usecase.NewList(listRepo)
 
-	collectionList := newCollectionListCmd(ctx, listUC)
-
-	loginCmd := newLoginCmd()
 	listCmd := newListCmd()
+	collectionListCmd := newCollectionListCmd(ctx, listUC)
+	taskListCmd := newTaskListCmd(ctx, taskUC, &cfg.App)
+
+	//loginCmd := newLoginCmd()
+
 	newCmd := createNewCmd()
+	configCmd := newConfigCmd(cfg)
 
-	addNewCmdFlags(newCmd)
-	addListCmdFlags(listCmd, collectionList)
+	//rootCmd.AddCommand(loginCmd)
+	//rootCmd.AddCommand(newCmd)
 
-	rootCmd.AddCommand(loginCmd)
-	rootCmd.AddCommand(newCmd)
+	initConfig(configCmd)
+	initAddNewCmd(newCmd)
+	initListCmd(listCmd, collectionListCmd, taskListCmd)
+
 	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(configCmd)
 
-	err := rootCmd.Execute()
+	err = rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}

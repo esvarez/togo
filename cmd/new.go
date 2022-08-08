@@ -19,7 +19,7 @@ func createNewCmd() *cobra.Command {
 	}
 }
 
-func addNewCmdFlags(n *cobra.Command) {
+func initAddNewCmd(n *cobra.Command) {
 	n.Flags().StringVarP(&name, "name", "n", "", "Name of the task")
 	n.Flags().StringVarP(&description, "description", "d", "", "Description of the task")
 

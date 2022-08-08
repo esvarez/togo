@@ -14,10 +14,12 @@ func newListCmd() *cobra.Command {
 		Use:   "list",
 		Short: "Perform the list action",
 		Long:  `Get the list of tasks to do`,
-		Run:   func(cmd *cobra.Command, args []string) {},
+		Run: func(cmd *cobra.Command, args []string) {
+		},
 	}
 }
 
-func addListCmdFlags(list *cobra.Command, collection *cobra.Command) {
+func initListCmd(list *cobra.Command, collection *cobra.Command, task *cobra.Command) {
 	list.AddCommand(collection)
+	list.AddCommand(task)
 }

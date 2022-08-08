@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"github.com/esvarez/togo/config"
 
 	"github.com/esvarez/togo/internal/entity"
 )
@@ -12,6 +13,7 @@ type listRepo interface {
 }
 
 type List struct {
+	app  *config.App
 	repo listRepo
 }
 

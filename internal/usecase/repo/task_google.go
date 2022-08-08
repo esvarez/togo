@@ -12,8 +12,8 @@ type TaskRepo struct {
 	srv *tasks.Service
 }
 
-func NewTaskRepo() *TaskRepo {
-	return &TaskRepo{}
+func NewTaskRepo(srv *tasks.Service) *TaskRepo {
+	return &TaskRepo{srv: srv}
 }
 
 func (t TaskRepo) NewTask(ctx context.Context, task *entity.Task) (string, error) {
@@ -21,9 +21,8 @@ func (t TaskRepo) NewTask(ctx context.Context, task *entity.Task) (string, error
 	panic("implement me")
 }
 
-func (t TaskRepo) GetTasks(ctx context.Context, limit int) ([]*entity.Task, error) {
-
-	resp, err := t.srv.Tasklists.List().MaxResults(int64(limit)).Do()
+func (t TaskRepo) GetTasks(ctx context.Context, listID string, limit int) ([]*entity.Task, error) {
+	resp, err := t.srv.Tasks.List(listID).MaxResults(int64(limit)).Do()
 	if err != nil {
 		return nil, err
 	}
@@ -32,8 +31,9 @@ func (t TaskRepo) GetTasks(ctx context.Context, limit int) ([]*entity.Task, erro
 	if len(resp.Items) > 0 {
 		for i, item := range resp.Items {
 			tasks[i] = &entity.Task{
-				ID:   item.Id,
-				Name: item.Title,
+				ID:          item.Id,
+				Name:        item.Title,
+				Description: item.Notes,
 			}
 		}
 	} else {
