@@ -21,6 +21,3 @@ func newLoginCmd() *cobra.Command {
 		},
 	}
 }
-
-func init() {
-}

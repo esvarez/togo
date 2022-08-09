@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/esvarez/togo/internal/entity"
 	errs "github.com/esvarez/togo/pkg/error"
-
 	"google.golang.org/api/tasks/v1"
 )
 
@@ -16,9 +15,16 @@ func NewTaskRepo(srv *tasks.Service) *TaskRepo {
 	return &TaskRepo{srv: srv}
 }
 
-func (t TaskRepo) NewTask(ctx context.Context, task *entity.Task) (string, error) {
-	//TODO implement me
-	panic("implement me")
+func (t TaskRepo) NewTask(ctx context.Context, listID string, task *entity.Task) (string, error) {
+	resp, err := t.srv.Tasks.Insert(listID, &tasks.Task{
+		Notes: task.Description,
+		Title: task.Name,
+		Due:   task.DueDate,
+	}).Do()
+	if err != nil {
+		return "", err
+	}
+	return resp.Id, nil
 }
 
 func (t TaskRepo) GetTasks(ctx context.Context, listID string, limit int) ([]*entity.Task, error) {
@@ -28,6 +34,7 @@ func (t TaskRepo) GetTasks(ctx context.Context, listID string, limit int) ([]*en
 	}
 
 	tasks := make([]*entity.Task, len(resp.Items))
+
 	if len(resp.Items) > 0 {
 		for i, item := range resp.Items {
 			tasks[i] = &entity.Task{

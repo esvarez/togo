@@ -11,11 +11,6 @@ type ListRepo struct {
 	srv *tasks.Service
 }
 
-func (l *ListRepo) NewList(ctx context.Context, list *entity.TaskList) (string, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
 func NewListRepo(srv *tasks.Service) *ListRepo {
 	return &ListRepo{srv: srv}
 }
@@ -37,4 +32,15 @@ func (l *ListRepo) GetLists(ctx context.Context) ([]*entity.TaskList, error) {
 		return nil, errs.ErrNotFound
 	}
 	return lists, nil
+}
+
+func (l *ListRepo) NewList(ctx context.Context, list *entity.TaskList) (string, error) {
+	tList := &tasks.TaskList{
+		Title: list.Title,
+	}
+	resp, err := l.srv.Tasklists.Insert(tList).Do()
+	if err != nil {
+		return "", err
+	}
+	return resp.Id, nil
 }

@@ -15,12 +15,13 @@ import (
 )
 
 type taskUseCase interface {
-	Create(context.Context, *entity.Task) (string, error)
+	Create(context.Context, string, *entity.Task) (string, error)
 	List(context.Context, string, int) ([]*entity.Task, error)
 }
 
 type listUseCase interface {
 	List(context.Context) ([]*entity.TaskList, error)
+	Create(context.Context, *entity.TaskList) (string, error)
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -56,24 +57,20 @@ func Execute() {
 	taskUC := usecase.NewTask(taskRepo)
 	listUC := usecase.NewList(listRepo)
 
-	listCmd := newListCmd()
 	collectionListCmd := newCollectionListCmd(ctx, listUC)
 	taskListCmd := newTaskListCmd(ctx, taskUC, &cfg.App)
 
-	//loginCmd := newLoginCmd()
+	nwListCmd := newCreateListCmd(ctx, listUC)
+	nwTaskCmd := newTaskCmd(ctx, taskUC, &cfg.App)
 
-	newCmd := createNewCmd()
+	listCmd := newListCmd(collectionListCmd, taskListCmd)
+	newCmd := createNewCmd(nwListCmd, nwTaskCmd)
+
 	configCmd := newConfigCmd(cfg)
-
-	//rootCmd.AddCommand(loginCmd)
-	//rootCmd.AddCommand(newCmd)
-
-	initConfig(configCmd)
-	initAddNewCmd(newCmd)
-	initListCmd(listCmd, collectionListCmd, taskListCmd)
 
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(configCmd)
+	rootCmd.AddCommand(newCmd)
 
 	err = rootCmd.Execute()
 	if err != nil {

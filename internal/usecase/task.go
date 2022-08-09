@@ -7,7 +7,7 @@ import (
 )
 
 type taskRepo interface {
-	NewTask(context.Context, *entity.Task) (string, error)
+	NewTask(context.Context, string, *entity.Task) (string, error)
 	GetTasks(context.Context, string, int) ([]*entity.Task, error)
 	GetTask(context.Context, string, string) (*entity.Task, error)
 	EditTask(context.Context, *entity.Task) error
@@ -24,8 +24,8 @@ func NewTask(repo taskRepo) *Task {
 	return &Task{repo: repo}
 }
 
-func (t *Task) Create(ctx context.Context, task *entity.Task) (string, error) {
-	return t.repo.NewTask(ctx, task)
+func (t *Task) Create(ctx context.Context, listID string, task *entity.Task) (string, error) {
+	return t.repo.NewTask(ctx, listID, task)
 }
 
 func (t *Task) Edit(ctx context.Context, task *entity.Task) error {

@@ -1,27 +1,22 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 )
 
-var (
-	name        string
-	description string
-)
-
 // newCmd represents the new command
-func createNewCmd() *cobra.Command {
-	return &cobra.Command{
+func createNewCmd(list, task *cobra.Command) *cobra.Command {
+	cmd := &cobra.Command{
 		Use:   "new",
 		Short: "Create a new task",
 		Long:  `Create a new task.`,
-		Run:   func(cmd *cobra.Command, args []string) {},
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("new called")
+		},
 	}
-}
+	cmd.AddCommand(list)
+	cmd.AddCommand(task)
 
-func initAddNewCmd(n *cobra.Command) {
-	n.Flags().StringVarP(&name, "name", "n", "", "Name of the task")
-	n.Flags().StringVarP(&description, "description", "d", "", "Description of the task")
-
-	n.MarkFlagRequired("name")
+	return cmd
 }

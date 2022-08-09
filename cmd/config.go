@@ -14,7 +14,7 @@ var defaultList string
 const path = "./config/config.yaml"
 
 func newConfigCmd(conf *config.Configuration) *cobra.Command {
-	return &cobra.Command{
+	c := &cobra.Command{
 		Use:   "config",
 		Short: "Configure the application",
 		Long:  `Configure the application.`,
@@ -36,9 +36,8 @@ func newConfigCmd(conf *config.Configuration) *cobra.Command {
 			}
 		},
 	}
-}
 
-func initConfig(conf *cobra.Command) {
-	conf.Flags().StringVarP(&defaultList, "default_list", "d", "", "ID of list")
-	conf.MarkFlagRequired("default_list")
+	c.Flags().StringVarP(&defaultList, "default_list", "d", "", "ID of list")
+	c.MarkFlagRequired("default_list")
+	return c
 }

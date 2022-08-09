@@ -23,7 +23,37 @@ func NewService() *tasks.Service {
 	}
 
 	// If modifying these scopes, delete your previously saved token.json.
-	config, err := google.ConfigFromJSON(b, tasks.TasksReadonlyScope)
+	config, err := google.ConfigFromJSON(b, tasks.TasksScope)
+	if err != nil {
+		log.Fatalf("Unable to parse client secret file to config: %v", err)
+	}
+
+	tokFile := "token.json"
+
+	tok, err := tokenFromFile(tokFile)
+	if err != nil {
+		log.Fatalf("Unable to read token from %s: %v", tokFile, err)
+	}
+
+	client := config.Client(context.Background(), tok)
+
+	srv, err := tasks.NewService(ctx, option.WithHTTPClient(client))
+	if err != nil {
+		log.Fatalf("Unable to retrieve tasks Client %v", err)
+	}
+
+	return srv
+}
+
+func LoginSrv() *tasks.Service {
+	ctx := context.Background()
+	b, err := ioutil.ReadFile("credentials.json")
+	if err != nil {
+		log.Fatalf("Unable to read client secret file: %v", err)
+	}
+
+	// If modifying these scopes, delete your previously saved token.json.
+	config, err := google.ConfigFromJSON(b, tasks.TasksScope)
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}

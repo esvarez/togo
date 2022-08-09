@@ -14,7 +14,7 @@ var (
 
 // taskListCmd represents the taskList command
 func newTaskListCmd(ctx context.Context, t taskUseCase, app *config.App) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "task",
 		Short: "List all tasks",
 		Long:  `List all tasks.`,
@@ -33,18 +33,6 @@ func newTaskListCmd(ctx context.Context, t taskUseCase, app *config.App) *cobra.
 			}
 		},
 	}
-}
-
-func initTaskList(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&taskList, "taskList", "l", "", "Name of the task list")
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// taskListCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// taskListCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	return cmd
 }
