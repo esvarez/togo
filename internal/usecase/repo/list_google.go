@@ -44,3 +44,11 @@ func (l *ListRepo) NewList(ctx context.Context, list *entity.TaskList) (string, 
 	}
 	return resp.Id, nil
 }
+
+func (l *ListRepo) Delete(ctx context.Context, s string) error {
+	err := l.srv.Tasklists.Delete(s).Do()
+	if err != nil {
+		return err
+	}
+	return nil
+}

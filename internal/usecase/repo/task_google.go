@@ -7,6 +7,10 @@ import (
 	"google.golang.org/api/tasks/v1"
 )
 
+const (
+	completed = "completed"
+)
+
 type TaskRepo struct {
 	srv *tasks.Service
 }
@@ -37,10 +41,12 @@ func (t TaskRepo) GetTasks(ctx context.Context, listID string, limit int) ([]*en
 
 	if len(resp.Items) > 0 {
 		for i, item := range resp.Items {
-			tasks[i] = &entity.Task{
-				ID:          item.Id,
-				Name:        item.Title,
-				Description: item.Notes,
+			if item.Status != completed {
+				tasks[i] = &entity.Task{
+					ID:          item.Id,
+					Name:        item.Title,
+					Description: item.Notes,
+				}
 			}
 		}
 	} else {
@@ -59,12 +65,24 @@ func (t TaskRepo) EditTask(ctx context.Context, task *entity.Task) error {
 	panic("implement me")
 }
 
-func (t TaskRepo) CompleteTask(ctx context.Context, s string) error {
-	//TODO implement me
-	panic("implement me")
+func (t TaskRepo) CompleteTask(ctx context.Context, listID, taskID string) error {
+	item, err := t.srv.Tasks.Get(listID, taskID).Do()
+	if err != nil {
+		return err
+	}
+	item.Status = completed
+
+	_, err = t.srv.Tasks.Update(listID, taskID, item).Do()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (t TaskRepo) DeleteTask(ctx context.Context, s string) error {
-	//TODO implement me
-	panic("implement me")
+func (t TaskRepo) DeleteTask(ctx context.Context, listID, taskID string) error {
+	err := t.srv.Tasks.Delete(listID, taskID).Do()
+	if err != nil {
+		return err
+	}
+	return nil
 }

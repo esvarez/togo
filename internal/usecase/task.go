@@ -11,8 +11,8 @@ type taskRepo interface {
 	GetTasks(context.Context, string, int) ([]*entity.Task, error)
 	GetTask(context.Context, string, string) (*entity.Task, error)
 	EditTask(context.Context, *entity.Task) error
-	CompleteTask(context.Context, string) error
-	DeleteTask(context.Context, string) error
+	CompleteTask(context.Context, string, string) error
+	DeleteTask(context.Context, string, string) error
 }
 
 type Task struct {
@@ -32,12 +32,12 @@ func (t *Task) Edit(ctx context.Context, task *entity.Task) error {
 	return t.repo.EditTask(ctx, task)
 }
 
-func (t *Task) Complete(ctx context.Context, id string) error {
-	return t.repo.CompleteTask(ctx, id)
+func (t *Task) Complete(ctx context.Context, listID, id string) error {
+	return t.repo.CompleteTask(ctx, listID, id)
 }
 
-func (t *Task) Delete(ctx context.Context, id string) error {
-	return t.repo.DeleteTask(ctx, id)
+func (t *Task) Delete(ctx context.Context, idList, id string) error {
+	return t.repo.DeleteTask(ctx, idList, id)
 }
 
 func (t *Task) List(ctx context.Context, listID string, limit int) ([]*entity.Task, error) {

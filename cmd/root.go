@@ -16,12 +16,15 @@ import (
 
 type taskUseCase interface {
 	Create(context.Context, string, *entity.Task) (string, error)
+	Complete(context.Context, string, string) error
 	List(context.Context, string, int) ([]*entity.Task, error)
+	Delete(context.Context, string, string) error
 }
 
 type listUseCase interface {
 	List(context.Context) ([]*entity.TaskList, error)
 	Create(context.Context, *entity.TaskList) (string, error)
+	Delete(context.Context, string) error
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -63,14 +66,20 @@ func Execute() {
 	nwListCmd := newCreateListCmd(ctx, listUC)
 	nwTaskCmd := newTaskCmd(ctx, taskUC, &cfg.App)
 
-	listCmd := newListCmd(collectionListCmd, taskListCmd)
-	newCmd := createNewCmd(nwListCmd, nwTaskCmd)
+	deleteListCmd := newDeleteListCmd(ctx, listUC, &cfg.App)
+	deleteTaskCmd := newDeleteTaskCmd(ctx, taskUC, &cfg.App)
 
 	configCmd := newConfigCmd(cfg)
+	listCmd := newListCmd(collectionListCmd, taskListCmd)
+	newCmd := createNewCmd(nwListCmd, nwTaskCmd)
+	deleteCmd := newDeleteCmd(deleteListCmd, deleteTaskCmd)
+	completeCmd := newCompleteCmd(ctx, taskUC, &cfg.App)
 
-	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(configCmd)
+	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(newCmd)
+	rootCmd.AddCommand(completeCmd)
+	rootCmd.AddCommand(deleteCmd)
 
 	err = rootCmd.Execute()
 	if err != nil {

@@ -21,8 +21,7 @@ func NewService() *tasks.Service {
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
-
-	// If modifying these scopes, delete your previously saved token.json.
+	//// If modifying these scopes, delete your previously saved token.json.
 	config, err := google.ConfigFromJSON(b, tasks.TasksScope)
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
@@ -35,7 +34,7 @@ func NewService() *tasks.Service {
 		log.Fatalf("Unable to read token from %s: %v", tokFile, err)
 	}
 
-	client := config.Client(context.Background(), tok)
+	client := config.Client(ctx, tok)
 
 	srv, err := tasks.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
