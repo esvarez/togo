@@ -3,75 +3,82 @@ package google
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 	"google.golang.org/api/tasks/v1"
 )
 
-func NewService() *tasks.Service {
+var (
+	home, _   = os.UserHomeDir()
+	togoDir   = home + "/.togo/"
+	tokenFile = togoDir + "token.json"
+)
+
+func GetService() *tasks.Service {
 	ctx := context.Background()
-	b, err := ioutil.ReadFile("credentials.json")
+
+	tok, err := tokenFromFile(tokenFile)
+	if err != nil {
+		return nil
+	}
+
+	b, err := json.Marshal(getCredentials())
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
-	//// If modifying these scopes, delete your previously saved token.json.
+
 	config, err := google.ConfigFromJSON(b, tasks.TasksScope)
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
 
-	tokFile := "token.json"
-
-	tok, err := tokenFromFile(tokFile)
-	if err != nil {
-		log.Fatalf("Unable to read token from %s: %v", tokFile, err)
-	}
-
-	client := config.Client(ctx, tok)
+	client := config.Client(context.Background(), tok)
 
 	srv, err := tasks.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
-		log.Fatalf("Unable to retrieve tasks Client %v", err)
+		log.Fatalf("Unable to retrieve tasks client: %v", err)
 	}
-
 	return srv
 }
 
-func LoginSrv() *tasks.Service {
+func Login() *tasks.Service {
 	ctx := context.Background()
-	b, err := ioutil.ReadFile("credentials.json")
+	b, err := json.Marshal(getCredentials())
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
 
-	// If modifying these scopes, delete your previously saved token.json.
 	config, err := google.ConfigFromJSON(b, tasks.TasksScope)
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
-	client := getClient(config)
+
+	tok := getTokenFromWeb(config)
+	saveToken(tokenFile, tok)
+
+	log.Printf("logged successfully")
+	client := config.Client(context.Background(), tok)
 
 	srv, err := tasks.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
-		log.Fatalf("Unable to retrieve tasks Client %v", err)
+		log.Fatalf("Unable to retrieve tasks client: %v", err)
 	}
-
 	return srv
 }
 
+// Retrieve a token, saves the token, then returns the generated client.
 func getClient(config *oauth2.Config) *http.Client {
-	tokFile := "token.json"
-	tok, err := tokenFromFile(tokFile)
+	tok, err := tokenFromFile(tokenFile)
 	if err != nil {
 		tok = getTokenFromWeb(config)
-		saveToken(tokFile, tok)
+		saveToken(tokenFile, tok)
 	}
 	return config.Client(context.Background(), tok)
 }
@@ -108,11 +115,19 @@ func tokenFromFile(file string) (*oauth2.Token, error) {
 
 // Saves a token to a file path.
 func saveToken(path string, token *oauth2.Token) {
-	fmt.Printf("Saving credential file to: %s\n", path)
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		log.Fatalf("Unable to cache oauth token: %v", err)
 	}
 	defer f.Close()
 	json.NewEncoder(f).Encode(token)
+}
+
+func init() {
+	if _, err := os.Stat(togoDir); errors.Is(err, os.ErrNotExist) {
+		err = os.Mkdir(togoDir, os.ModePerm)
+		if err != nil {
+			log.Printf("error creating folder %v", err)
+		}
+	}
 }

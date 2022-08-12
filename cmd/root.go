@@ -46,13 +46,16 @@ to quickly create a Cobra application.`,
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	ctx := context.Background()
-	cfg, err := config.NewConfig()
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
 		os.Exit(1)
 	}
 
-	srv := google.NewService()
+	srv := google.GetService()
+	if srv == nil {
+		srv = google.Login()
+	}
 
 	taskRepo := repo.NewTaskRepo(srv)
 	listRepo := repo.NewListRepo(srv)
@@ -85,17 +88,4 @@ func Execute() {
 	if err != nil {
 		os.Exit(1)
 	}
-}
-
-func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.togo.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
