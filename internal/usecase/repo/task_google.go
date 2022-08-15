@@ -37,16 +37,16 @@ func (t TaskRepo) GetTasks(ctx context.Context, listID string, limit int) ([]*en
 		return nil, err
 	}
 
-	tasks := make([]*entity.Task, len(resp.Items))
+	tasks := make([]*entity.Task, 0)
 
 	if len(resp.Items) > 0 {
-		for i, item := range resp.Items {
+		for _, item := range resp.Items {
 			if item.Status != completed {
-				tasks[i] = &entity.Task{
+				tasks = append(tasks, &entity.Task{
 					ID:          item.Id,
 					Name:        item.Title,
 					Description: item.Notes,
-				}
+				})
 			}
 		}
 	} else {
